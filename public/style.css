@@ -1,0 +1,50 @@
+.logo-big {
+	width: 200px;
+}
+
+.place {
+	border: 1px solid lightgray;
+	padding: 5px;
+	background: white;
+}
+
+.place .place-name {
+	font-size: medium;
+    font-weight: 500;
+    padding: 0;
+    margin: 0;
+}
+
+.place .place-address {
+	font-size: small;
+    font-weight: 100;
+}
+
+#hour-counts {
+	display: inline-flex;
+    width: 100%;
+    overflow-x: scroll;
+}
+
+.hour-count {
+	text-align: center;
+    border: 1px solid lightblue;
+    margin: 5px;
+    border-radius: 5px;
+    padding: 10px 30px;
+}
+
+.day-count {
+	margin: 5px;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.time-picker {
+	margin-top: 50px;
+    padding-bottom: 50px;
+}
+
+.time-picker .input-group {
+	height: 58px;
+}

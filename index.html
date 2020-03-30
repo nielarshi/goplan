@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+  		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+
+  		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+		<script src="moment-with-locales.js"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"  crossorigin="anonymous"></script>
+
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css">
+		<link href="jumbotron-narrow.css" rel="stylesheet">
+		<link href="style.css" rel="stylesheet">
+
+	</head>
+	<body>
+		<div class="container">
+		  <div class="header clearfix">
+			<nav>
+				<ul class="nav nav-pills pull-right">
+					<li role="presentation" class="active"><a id="logoutBtn" href="#">Logout</a></li>
+				</ul>
+			</nav>
+			<h3 class="text-muted">Go Plan</h3>
+      	</div>
+
+      <div class="jumbotron">
+      	<div id="intro">
+      		<img src="logo.png" class="logo-big"/>
+	        <p class="lead">Planning to go outside?</p>
+	        <em>See how many are planning like you.</em>
+	        <p class="lead">Plan ahead, stay safe!</p>
+	        <p><a class="btn btn-lg btn-primary" id="loginBtn" href="#" role="button">Login</a></p>
+      	</div>
+
+        <div id="login">
+        	<form class="form-horizontal">
+			  <div class="form-group">
+			    <label for="inputUsername3" class="col-sm-2 control-label">Username</label>
+			    <div class="col-sm-10">
+			      <input type="username" class="form-control" id="inputUsername3" placeholder="Username" value="nielarshi">
+			    </div>
+			  </div>
+			  <div class="form-group">
+			    <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+			    <div class="col-sm-10">
+			      <input type="password" class="form-control" id="inputPassword3" placeholder="Password">
+			    </div>
+			  </div>
+			  <div class="form-group">
+			    <div class="col-sm-offset-2 col-sm-10">
+			      <button type="submit" class="btn btn-primary" id="signInBtn">Sign in</button>
+			    </div>
+			  </div>
+			</form>
+        </div>
+      
+
+      <div id="search">
+		  <div class="ui-widget">
+			  <input type="search" class="form-control" id="placeSearchBar" placeholder="Search a place">
+			  <div id="places"></div>
+		  </div>
+      </div>
+
+      <div id="count-div">
+      	 <h2 id="hour-counts-tag"><small>Next 24 hours</small></h2>
+		 <div id="hour-counts"></div>
+		 <h2 id="hour-counts-tag"><small>Next 7 days</small></h2>
+		 <div id="day-counts"></div>
+		<div class="time-picker">
+		
+	        <div class='col-sm-5'>
+	            <div class="form-group">
+	                <div class='input-group date' id='datetimepicker1'>
+	         
+	                    <input type='text' class="form-control input-group" />
+	                    <span class="input-group-addon">
+	                        <span class="glyphicon glyphicon-calendar"></span>
+	                    </span>
+	                </div>
+	                
+	            </div>
+	        </div>
+	        <div class='col-sm-3'>
+	        	<div class='input-group date'>
+                	<label>How many</label>
+                	<input type="number" class="form-control" id="howMany" placeholder="How Many" value=1 />
+                </div>
+            </div>
+		    <div class='col-sm-3'>
+		    	<p><a class="btn btn-lg btn-primary" id="logBtn" href="#" role="button">Log yours</a></p>
+		    </div>
+		</div>
+	  </div>
+
+      </div>
+
+      <footer class="footer">
+        <p>© 2020 Company, Inc.</p>
+      </footer>
+
+    </div>
+
+  		
+	</body>
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			
+			// calls to elasticsearch
+			// all data are stored in Elasticsearch
+
+			
+			var APIs = {
+				"login" : "/gp-users/_search",
+				"places" : "/gp-places/_search",
+				"count" : "/gp-logs/_search",
+				"log" : "/gp-logs/_doc"
+			}
+
+			var request = function(type, api, data, callback) {
+				$.ajax({
+					type: 'POST',
+				    url: '/proxy',
+				    dataType: 'json',
+				    data: JSON.stringify({
+				    	type: type,
+				    	api: api, 
+				    	data: data
+				    }),
+				    success: function(response) { 
+				    	callback(response);
+				    },
+				    contentType: "application/json"
+				});
+			}
+
+
+			var login = function(username, password, callback) {
+
+				var data = {
+				  "query": {
+				    "match_phrase": {
+				      "userid": username
+				    }
+				  }
+				};
+
+				request('GET', APIs.login, data, function(response) {
+					console.log("Got", response);
+					if (response && response.hits && response.hits.total && response.hits.total.value > 0) {
+						var user = response.hits.hits[0]._source;
+						user.id = response.hits.hits[0]._id;
+						callback(user);
+					} else {
+						// problem logging in
+						callback(false);
+					}
+				});
+			};
+
+			var getPlaces = function(keyword, callback) {
+				// request json
+				var data = {
+				  "size": 20, 
+				  "query": {
+				    "regexp": {
+      					"tags": keyword + ".*",
+				    }
+				  },
+				  "sort" : [
+				    {
+				      "_geo_distance" : {
+				        "location" : {
+				          "lat": 35.83126, 
+				          "lon": -78.882294
+				        },
+				        "order" : "asc",
+				        "unit" : "km"
+				      }
+				    }
+				  ]
+				};
+
+				request('GET', APIs.places, data, function(response) {
+					console.log("Got", response);
+
+					// construct place list
+					var places = [];
+					if (response && response.hits && response.hits.total && response.hits.total.value > 0) {
+						$.each(response.hits.hits, function(index, value) {
+							var place = value._source;
+							place.id = value._id;
+							places.push(place);
+						});
+						callback(places);
+					};
+				});
+			};
+
+			var getCount = function(place, period, callback) {
+				var upper;
+				if (period == 'week') {
+					upper = '4w/w';
+				} else if (period == 'day') {
+					upper = '7d/d';
+				} else {
+					upper = '1d/d';
+				}
+
+				
+				// request json
+				var data = {
+				  "query": {
+				    "bool": {
+				      "should": [
+				        {
+				          "match": {
+				            "place": place
+				          }
+				        },
+				        {
+				          "range": {
+				            "plan_date": {
+				              "gte": "now",
+				              "lte": "now+" + upper
+				            }
+				          }
+				        }
+				      ],
+				      "minimum_should_match": 2
+				    }
+				  },
+				  "aggs": {
+				    "data": {
+				      "date_histogram": {
+				        "field": "plan_date",
+				        "calendar_interval": period
+				      },
+				      "aggs": {
+				        "quantity": {
+				          "sum": {
+				            "field": "how_many"
+				          }
+				        }
+				      }
+				    }
+				  },
+				  "size": 0
+				};
+
+				request('GET', APIs.count, data, function(response) {
+					console.log("Got count", response);
+					// construct place list
+					var counts = [];
+					if (response && response.hits && response.hits.total && response.hits.total.value > 0) {
+						$.each(response.aggregations.data.buckets, function(index, value) {
+							var time = moment(value.key_as_string).format('LT');
+							var date = moment(value.key_as_string).format("Do MMM");
+							var count = value.quantity.value;
+							counts.push({ "date": date, "time": time, "count": count });
+						});
+						callback(counts);
+					};
+
+				});
+			};
+
+			var logPlan = function(datetime, howMany) {
+				var placeId = sessionStorage.getItem("place");
+				var by = sessionStorage.getItem("user");
+
+				var data = {
+				  "creation_date": moment().format('YYYY-MM-DDTHH:mm:ssZ'),
+				  "place": placeId,
+				  "by": by,
+				  "plan_date": moment(datetime).format('YYYY-MM-DDTHH:mm:ssZ'),
+				  "how_many": howMany
+				}
+
+				request('POST', APIs.log, data, function(response) {
+					//reload the view
+
+					// get counts
+					setTimeout(function() { 
+						loadAllCounts(placeId); 
+					}, 2000);
+				});
+			}
+
+			var loadAllCounts = function(placeId) {
+				// load hourly
+				getCount(placeId, 'hour', function(countRes) {
+					console.log("Counts", countRes);
+
+					// show it on page
+					$("#hour-counts").empty();
+					$.each(countRes, function(index, count) {
+						$("#hour-counts").append("<div class='hour-count'><p class='hour-count-time'>" + count.time + "</p><p class='hour-count-doc'>" + count.count + "</p>");
+					});
+				});
+
+				// load for next 7 days
+				getCount(placeId, 'day', function(countRes) {
+					console.log("Counts", countRes);
+
+					// show it on page
+					$("#day-counts").empty();
+					$.each(countRes, function(index, count) {
+						$("#day-counts").append("<div class='day-count bg-primary row'><div class='day-count-time col-md-8'>" + count.date + "</div><div class='day-count-doc col-md-4'>" + count.count + "</div>");
+					});
+				});
+			}
+
+			var loginAction = function(username) {
+				$("#intro").hide();
+				$("#count-div").hide();
+
+				
+				if (!username) {
+					alert("Enter username!");
+				};
+				login(username, "", function(user) {
+					if (user) {
+						sessionStorage.setItem("userid", user.id);
+						sessionStorage.setItem("username", user.userid);
+						$("#login").hide();
+						$("#search").show();
+					} else {
+						alert("No user present.");
+					}
+				});
+			}
+
+
+			// on load
+			// check if logged in
+
+			var username = sessionStorage.getItem('username');
+			var userid = sessionStorage.getItem('userid');
+			if (username && userid) {
+				// already logged in
+				loginAction(username);
+			} else {
+				$("#login").hide();
+				$("#search").hide();
+				$("#count-div").hide();
+			}
+
+			$("#loginBtn").on('click', function(event) {
+				$("#intro").hide();
+				$("#search").hide();
+				$("#count-div").hide();
+				$("#login").show();
+			});
+
+			$("#logoutBtn").on('click', function(event) {
+				sessionStorage.clear();
+				location.reload();
+			});
+
+
+			$("#signInBtn").on('click', function(event) {
+				var username = $("#inputUsername3").val();
+				loginAction(username);
+			});
+		
+			// construct table below search 
+			$("#placeSearchBar").autocomplete({
+				source: function(request, response) {
+					console.log("Checking for ", request);
+					getPlaces(request.term, function(places) {
+						console.log("Got places ", places);
+						$("#places").empty();
+						$.each(places, function(index, place) {
+							$("#places").append("<div id=" +place.id+ " class='place'><p class='place-name'>" + place.name + "</p><p class='place-address'>" + place.address + ", " +place.zip+ "</p>");
+						});
+					});
+				},
+				minLength: 3,
+			    select: function(event, ui) {
+			    	console.log("Got place ", ui.item.value);
+			  	}
+			});
+
+			$(document).on('click', "#places .place", function(event) {
+				var placeId = $(this).attr('id');
+				console.log("Clicked", placeId);
+
+				sessionStorage.setItem("place", placeId);
+				$("#places").empty();
+				
+				$("#count-div").show();
+
+
+				// get counts
+				loadAllCounts(placeId);
+
+			});
+
+			$('#datetimepicker1').datetimepicker({
+				format: 'YYYY-MM-DDTHH:mm:ssZ'
+			});
+
+
+			$("#logBtn").on('click', function(event) {
+				var datetime = $("#datetimepicker1 input").val();
+				var howMany = $("#howMany").val();
+
+				console.log("Selected time: ", datetime, ", howMany: ", howMany);
+
+				logPlan(datetime, howMany);
+			});
+
+			history.pushState(null, null, location.href);
+			window.onpopstate = function () {
+			    history.go(1);
+			};
+		});
+	</script>
+</html>
