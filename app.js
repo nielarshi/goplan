@@ -66,7 +66,7 @@ server.post("/proxy", (req, res) => {
 });
 
 
-const port = 3000;
+const port = process.env.PORT;
 
 server.listen(port, () => {
     console.log(`Server listening at ${port}`);
